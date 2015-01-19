@@ -1,27 +1,58 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Windows.Forms.VisualStyles;
+using System.Drawing.Drawing2D;
 
 namespace Dimmer
 {
-    class MyTrackBar : System.Windows.Forms.TrackBar 
+    class MyTrackBar : TrackBar
     {
-        [DllImport("user32.dll")]
-        public extern static int SendMessage(IntPtr hWnd, uint msg, int wParam, int lParam);
-
-        private static int MakeParam(int loWord, int hiWord)
+        public MyTrackBar()
         {
-            return (hiWord << 16) | (loWord & 0xffff);
+            SetStyle(ControlStyles.UserPaint, true);
+            SetStyle(ControlStyles.DoubleBuffer, true);
+            SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+            this.BackColor = Color.Transparent;
         }
 
-        protected override void OnGotFocus(EventArgs e)
+        protected override void OnValueChanged(EventArgs e)
         {
-            base.OnGotFocus(e);
-            SendMessage(this.Handle, 0x0128, MakeParam(1, 0x1), 0);
+            Invalidate();
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+
+            var dimensions = TrackBarRenderer.GetBottomPointingThumbSize(g, TrackBarThumbState.Normal);
+
+            int sliderWidth = dimensions.Width;
+            int sliderHeight = dimensions.Height;
+            
+            float trackMargin = 10;
+            float trackLength = this.Width - 2 * trackMargin - sliderWidth;
+            float value = (float)Program.GetGamma();
+            float sliderPosition = trackMargin + trackLength * (value / this.Maximum);
+
+            Bitmap track = Properties.Resources.SliderTrack1;
+            Bitmap slider = Properties.Resources.Slider1;
+
+            Rectangle sliderBounds = new Rectangle((int)sliderPosition, 0, sliderWidth, sliderHeight);
+            RectangleF trackBounds = new Rectangle(0, (sliderBounds.Height - track.Height) / 2, ClientSize.Width, track.Height);
+
+            TextureBrush brush = new TextureBrush(track, new Rectangle(0, 0, track.Width, track.Height), new ImageAttributes());
+            brush.WrapMode = WrapMode.Tile;
+            brush.TranslateTransform(0, trackBounds.Y);
+
+            g.FillRectangle(brush, trackBounds.X, trackBounds.Y, trackBounds.Width, track.Height);
+            g.DrawImage(slider, sliderBounds, 0, 0, slider.Width, slider.Height, GraphicsUnit.Pixel, new ImageAttributes());
         }
     }
 
-    partial class Form1
+    partial class SliderPopup
     {
         /// <summary>
         /// Required designer variable.
@@ -41,12 +72,6 @@ namespace Dimmer
             base.Dispose(disposing);
         }
 
-        bool myVisible = false;
-        protected override void SetVisibleCore(bool value)
-        {
-            base.SetVisibleCore(myVisible);
-        }
-
         #region Windows Form Designer generated code
 
         /// <summary>
@@ -56,70 +81,92 @@ namespace Dimmer
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            this.trackBar1 = new Dimmer.MyTrackBar();
-            this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
-            this.contextMenuStrip1.SuspendLayout();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SliderPopup));
+            this.TrayIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.TrayContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.ExitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.BrightnessIcon = new System.Windows.Forms.PictureBox();
+            this.BrightnessSlider = new Dimmer.MyTrackBar();
+            this.TrayContextMenu.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.BrightnessIcon)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.BrightnessSlider)).BeginInit();
             this.SuspendLayout();
             // 
-            // trackBar1
+            // TrayIcon
             // 
-            this.trackBar1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.TrayIcon.ContextMenuStrip = this.TrayContextMenu;
+            this.TrayIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("TrayIcon.Icon")));
+            this.TrayIcon.Text = "Display Dimmer";
+            this.TrayIcon.Visible = true;
+            this.TrayIcon.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PressTrayIcon);
+            // 
+            // TrayContextMenu
+            // 
+            this.TrayContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ExitMenuItem});
+            this.TrayContextMenu.Name = "contextMenuStrip1";
+            this.TrayContextMenu.Size = new System.Drawing.Size(93, 26);
+            // 
+            // ExitMenuItem
+            // 
+            this.ExitMenuItem.Name = "ExitMenuItem";
+            this.ExitMenuItem.Size = new System.Drawing.Size(92, 22);
+            this.ExitMenuItem.Text = "Exit";
+            this.ExitMenuItem.Click += new System.EventHandler(this.ClickExitMenuItem);
+            // 
+            // BrightnessIcon
+            // 
+            this.BrightnessIcon.BackColor = System.Drawing.Color.Transparent;
+            this.BrightnessIcon.Image = ((System.Drawing.Image)(resources.GetObject("BrightnessIcon.Image")));
+            this.BrightnessIcon.InitialImage = ((System.Drawing.Image)(resources.GetObject("BrightnessIcon.InitialImage")));
+            this.BrightnessIcon.Location = new System.Drawing.Point(5, 5);
+            this.BrightnessIcon.Name = "BrightnessIcon";
+            this.BrightnessIcon.Size = new System.Drawing.Size(54, 57);
+            this.BrightnessIcon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.BrightnessIcon.TabIndex = 2;
+            this.BrightnessIcon.TabStop = false;
+            this.BrightnessIcon.MouseMove += new System.Windows.Forms.MouseEventHandler(this.DragToolbar);
+            // 
+            // BrightnessSlider
+            // 
+            this.BrightnessSlider.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.trackBar1.LargeChange = 100;
-            this.trackBar1.Location = new System.Drawing.Point(12, 12);
-            this.trackBar1.Maximum = 255;
-            this.trackBar1.Minimum = 1;
-            this.trackBar1.Name = "trackBar1";
-            this.trackBar1.Size = new System.Drawing.Size(345, 27);
-            this.trackBar1.SmallChange = 10;
-            this.trackBar1.TabIndex = 1;
-            this.trackBar1.TickFrequency = 5;
-            this.trackBar1.TickStyle = System.Windows.Forms.TickStyle.None;
-            this.trackBar1.Value = 1;
-            this.trackBar1.Scroll += new System.EventHandler(this.trackBar1_Scroll);
+            this.BrightnessSlider.BackColor = System.Drawing.Color.Transparent;
+            this.BrightnessSlider.Location = new System.Drawing.Point(65, 24);
+            this.BrightnessSlider.Maximum = 255;
+            this.BrightnessSlider.Minimum = 1;
+            this.BrightnessSlider.Name = "BrightnessSlider";
+            this.BrightnessSlider.Size = new System.Drawing.Size(425, 45);
+            this.BrightnessSlider.SmallChange = 5;
+            this.BrightnessSlider.TabIndex = 1;
+            this.BrightnessSlider.TickFrequency = 5;
+            this.BrightnessSlider.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.BrightnessSlider.Value = 1;
+            this.BrightnessSlider.Scroll += new System.EventHandler(this.SlideBrightness);
+            this.BrightnessSlider.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.ScrollMouseWheel);
             // 
-            // notifyIcon1
-            // 
-            this.notifyIcon1.ContextMenuStrip = this.contextMenuStrip1;
-            this.notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")));
-            this.notifyIcon1.Text = "Display Dimmer";
-            this.notifyIcon1.Visible = true;
-            this.notifyIcon1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.notifyIcon1_MouseDown);
-            // 
-            // contextMenuStrip1
-            // 
-            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.exitToolStripMenuItem});
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(93, 26);
-            // 
-            // exitToolStripMenuItem
-            // 
-            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(92, 22);
-            this.exitToolStripMenuItem.Text = "Exit";
-            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
-            // 
-            // Form1
+            // SliderPopup
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(369, 50);
+            this.BackgroundImage = global::Dimmer.Properties.Resources.Background1;
+            this.ClientSize = new System.Drawing.Size(502, 72);
             this.ControlBox = false;
-            this.Controls.Add(this.trackBar1);
+            this.Controls.Add(this.BrightnessIcon);
+            this.Controls.Add(this.BrightnessSlider);
+            this.ForeColor = System.Drawing.SystemColors.Control;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "Form1";
+            this.Name = "SliderPopup";
             this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.TopMost = true;
-            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseMove);
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
-            this.contextMenuStrip1.ResumeLayout(false);
+            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.DragToolbar);
+            this.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.ScrollMouseWheel);
+            this.TrayContextMenu.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.BrightnessIcon)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.BrightnessSlider)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -127,10 +174,11 @@ namespace Dimmer
 
         #endregion
 
-        private System.Windows.Forms.NotifyIcon notifyIcon1;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-        private MyTrackBar trackBar1;
+        private System.Windows.Forms.NotifyIcon TrayIcon;
+        private System.Windows.Forms.ContextMenuStrip TrayContextMenu;
+        private System.Windows.Forms.ToolStripMenuItem ExitMenuItem;
+        private MyTrackBar BrightnessSlider;
+        private PictureBox BrightnessIcon;
     }
 }
 

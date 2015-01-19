@@ -54,9 +54,6 @@ public class Program
 
     public static void Main(string[] args)
     {
-        GetGamma();
-        var mainWindow = new Dimmer.Form1();
-        mainWindow.Show();
-        Application.Run(mainWindow);
+        Application.Run(new Dimmer.SliderPopup());
     }
 }
