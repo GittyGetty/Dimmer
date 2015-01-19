@@ -12,7 +12,7 @@ namespace Dimmer
         public SliderPopup()
         {
             InitializeComponent();
-            this.BrightnessSlider.Value = Program.GetGamma();
+            this.BrightnessSlider.Value = ScreenGamma.GetGamma();
             this.DoubleBuffered = true;
         }
 
@@ -36,7 +36,7 @@ namespace Dimmer
                 message.Result = (IntPtr)HTCLIENT;
         }
 
-        private bool myVisible = true;
+        private bool myVisible = false;
         public new bool Visible
         {
             get { return myVisible; }
@@ -60,7 +60,7 @@ namespace Dimmer
 
         private void SlideBrightness(object sender, EventArgs e)
         {
-            Program.SetGamma(this.BrightnessSlider.Value);
+            ScreenGamma.SetGamma(this.BrightnessSlider.Value);
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace Dimmer
         private void PressTrayIcon(object sender, MouseEventArgs e)
         {
             var files = Directory.GetFiles("backgrounds")
-                                 .Where((file) => file.EndsWith(".jpg") || file.EndsWith("*.png"))
+                                 .Where((file) => file.EndsWith(".jpg") || file.EndsWith("*.png") || file.EndsWith("*.bmp"))
                                  .ToArray();
 
             if (files.Length > 0)
@@ -123,15 +123,5 @@ namespace Dimmer
             this.Visible = !this.Visible;
         }
         #endregion
-
-        private void trackBar1_Scroll(object sender, EventArgs e)
-        {
-
-        }
-
-        private void MouseWheelHandler(object sender, MouseEventArgs e)
-        {
-
-        }
     }
 }

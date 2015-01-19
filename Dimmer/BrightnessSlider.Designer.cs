@@ -34,7 +34,7 @@ namespace Dimmer
             
             float trackMargin = 10;
             float trackLength = this.Width - 2 * trackMargin - sliderWidth;
-            float value = (float)Program.GetGamma();
+            float value = (float)ScreenGamma.GetGamma();
             float sliderPosition = trackMargin + trackLength * (value / this.Maximum);
 
             Bitmap track = Properties.Resources.SliderTrack1;
@@ -129,8 +129,8 @@ namespace Dimmer
             // 
             // BrightnessSlider
             // 
-            this.BrightnessSlider.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.BrightnessSlider.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.BrightnessSlider.BackColor = System.Drawing.Color.Transparent;
             this.BrightnessSlider.Location = new System.Drawing.Point(65, 24);
@@ -150,7 +150,7 @@ namespace Dimmer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = global::Dimmer.Properties.Resources.Background1;
+            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.ClientSize = new System.Drawing.Size(502, 72);
             this.ControlBox = false;
             this.Controls.Add(this.BrightnessIcon);
