@@ -109,9 +109,15 @@ namespace Dimmer
         Random r = new Random();
         private void PressTrayIcon(object sender, MouseEventArgs e)
         {
-            var files = Directory.GetFiles("backgrounds")
+            string[] files = new string[0];
+
+            try
+            {
+                files = Directory.GetFiles("backgrounds")
                                  .Where((file) => file.EndsWith(".jpg") || file.EndsWith("*.png") || file.EndsWith("*.bmp"))
                                  .ToArray();
+            }
+            catch (DirectoryNotFoundException) {}
 
             if (files.Length > 0)
             {
