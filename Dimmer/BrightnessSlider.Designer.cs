@@ -125,6 +125,7 @@ namespace Dimmer
             this.BrightnessIcon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.BrightnessIcon.TabIndex = 2;
             this.BrightnessIcon.TabStop = false;
+            this.BrightnessIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.MainWindowDoubleClick);
             this.BrightnessIcon.MouseMove += new System.Windows.Forms.MouseEventHandler(this.DragToolbar);
             // 
             // BrightnessSlider
@@ -162,6 +163,7 @@ namespace Dimmer
             this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.TopMost = true;
+            this.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.MainWindowDoubleClick);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.DragToolbar);
             this.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.ScrollMouseWheel);
             this.TrayContextMenu.ResumeLayout(false);

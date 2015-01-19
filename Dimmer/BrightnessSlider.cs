@@ -122,6 +122,12 @@ namespace Dimmer
 
             this.Visible = !this.Visible;
         }
+
+        private void MainWindowDoubleClick(object sender, MouseEventArgs e)
+        {
+            this.Visible = !this.Visible;
+        }
+
         #endregion
     }
 }
